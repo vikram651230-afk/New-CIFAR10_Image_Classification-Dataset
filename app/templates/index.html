@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIFAR-10 Image Classification · Pure-ANN Web App</title>
+    <meta name="description" content="CIFAR-10 Image Classification powered by a Pure Artificial Neural Network (ANN) with zero convolutions.">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Theme CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-custom sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand text-decoration-none d-flex align-items-center gap-2" href="/">
+                <span class="fs-4 gradient-text fw-bold">CIFAR-10</span>
+                <span class="brand-badge">Pure-ANN</span>
+            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#metricsModal">
+                    <i class="bi bi-graph-up-arrow me-1 text-cyan"></i>
+                    <span class="d-none d-sm-inline">Model Metrics</span>
+                </button>
+                <a href="/api/health" target="_blank" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-activity text-success me-1"></i>
+                    <span class="d-none d-sm-inline">API Health</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4 flex-grow-1">
+        <!-- Hero Header -->
+        <div class="text-center mb-4">
+            <h1 class="fw-bolder display-6 gradient-text mb-2">CIFAR-10 Image Classification</h1>
+            <p class="text-secondary mx-auto" style="max-width: 680px; font-size: 0.95rem;">
+                Trained Artificial Neural Network (ANN) using <strong>Flatten + 3 Dense ReLU + Softmax</strong> layers.
+                <span class="text-cyan">Zero 2D convolutions (Conv2D) used.</span>
+            </p>
+
+            <!-- Supported Classes Pills -->
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3" id="classPillsContainer">
+                {% for c in classes %}
+                <span class="class-pill" data-class="{{ c }}">
+                    <span>{{ emojis.get(c, '🖼️') }}</span>
+                    <span>{{ c|capitalize }}</span>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Quick Sample Images Strip -->
+        <div class="neu-card mb-4 py-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="small fw-semibold text-secondary text-uppercase tracking-wider">
+                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Test Samples (Click any to test):
+                </span>
+                <span class="badge bg-dark text-cyan small border border-secondary border-opacity-25">10 Classes</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% for c in classes %}
+                <div class="sample-chip" data-class="{{ c }}" title="Click to test with real CIFAR-10 {{ c }} image">
+                    <img src="/api/sample/{{ c }}" alt="{{ c }}">
+                    <span>{{ c|capitalize }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="errorAlert" class="alert alert-danger d-none alert-dismissible fade show neu-card border-danger border-opacity-50 py-3 mb-4" role="alert">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                    <span id="errorMessage">An error occurred</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-link text-secondary p-0" onclick="window.dismissError()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Two Column Interactive Layout -->
+        <div class="row g-4">
+            <!-- Left: Upload Section -->
+            <div class="col-lg-6">
+                <div class="neu-card h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 text-white">
+                            <i class="bi bi-cloud-arrow-up text-cyan me-2"></i>Image Upload
+                        </h5>
+                        <span class="badge bg-dark text-secondary border border-secondary border-opacity-25">Step 1</span>
+                    </div>
+
+                    <!-- Drop Zone -->
+                    <div id="dropZone" class="drop-zone mb-3">
+                        <i class="bi bi-image drop-icon"></i>
+                        <h6 class="fw-bold text-white mb-1">Drag &amp; Drop an image here</h6>
+                        <p class="text-secondary small mb-3">or click to browse from your device</p>
+                        <span class="btn btn-sm btn-outline-secondary">Choose Image</span>
+                        <input type="file" id="fileInput" class="d-none" accept="image/png,image/jpeg,image/webp,image/bmp">
+                        <div class="small text-muted mt-3" style="font-size: 0.75rem;">
+                            Normalized to 32×32 RGB float32 [0, 1] matching notebook preprocessing
+                        </div>
+                    </div>
+
+                    <!-- Selected Image Preview -->
+                    <div id="previewContainer" class="preview-container d-none mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-secondary fw-semibold">Uploaded Preview:</span>
+                            <span class="badge bg-dark text-cyan small">Standardized to 32×32 for inference</span>
+                        </div>
+                        <img id="imagePreview" src="" alt="Selected Preview" class="preview-img">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2">
+                        <button id="predictBtn" class="btn btn-predict flex-grow-1" disabled>
+                            <i class="bi bi-cpu me-2"></i>Classify with Pure-ANN
+                        </button>
+                        <button id="resetBtn" class="btn btn-reset">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center py-4 d-none">
+                        <div class="spinner-pulse mb-2"></div>
+                        <p class="small text-cyan mb-0">Running forward pass through Dense layers...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Prediction Results Section -->
+            <div class="col-lg-6">
+                <div class="neu-card h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0 text-white">
+                            <i class="bi bi-check2-circle text-cyan me-2"></i>Prediction Result
+                        </h5>
+                        <span class="badge bg-dark text-secondary border border-secondary border-opacity-25">Step 2</span>
+                    </div>
+
+                    <!-- Placeholder when no prediction yet -->
+                    <div id="resultsContainer" class="d-none">
+                        <div class="result-card mb-4">
+                            <div id="resultEmoji" class="result-emoji">🖼️</div>
+                            <div id="resultClass" class="result-class text-white">Class</div>
+                            <div>
+                                <span id="resultConfidence" class="confidence-badge">0.0% Confidence</span>
+                            </div>
+                            <div id="resultLatency" class="small text-secondary mt-2 font-monospace">Latency: 0 ms</div>
+                        </div>
+
+                        <!-- Class Probability Distributions -->
+                        <h6 class="fw-semibold text-white mb-2 small text-uppercase tracking-wider">
+                            Class Probability Distribution:
+                        </h6>
+                        <div id="probBarsContainer">
+                            <!-- Populated dynamically by script.js -->
+                        </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div id="emptyResultNotice" class="text-center py-5 text-secondary">
+                        <i class="bi bi-pie-chart fs-1 text-secondary opacity-50 mb-3 d-block"></i>
+                        <p class="mb-1">No prediction yet.</p>
+                        <p class="small text-muted">Upload an image or click a quick sample above to see the model prediction and confidence score.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Breakdown Section -->
+        <div class="neu-card mt-4">
+            <h5 class="fw-bold text-white mb-3">
+                <i class="bi bi-diagram-3 text-cyan me-2"></i>Model Architecture &amp; Methodology
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-3 col-6">
+                    <div class="metric-box">
+                        <div class="metric-val">{{ metrics.get('test_accuracy_percent', '44.21') }}%</div>
+                        <div class="metric-lbl">Test Accuracy</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="metric-box">
+                        <div class="metric-val">638,040</div>
+                        <div class="metric-lbl">Trainable Parameters</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="metric-box">
+                        <div class="metric-val">0</div>
+                        <div class="metric-lbl">Conv2D Layers</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="metric-box">
+                        <div class="metric-val">10</div>
+                        <div class="metric-lbl">Output Classes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 p-3 bg-dark rounded border border-secondary border-opacity-25 small text-secondary">
+                <strong class="text-white">Preserved Notebook Architecture:</strong>
+                Input <code>(32, 32, 3)</code> &rarr;
+                <code>Flatten()</code> (3,072 features) &rarr;
+                <code>Dense(200, relu)</code> &rarr;
+                <code>Dense(100, relu)</code> &rarr;
+                <code>Dense(30, relu)</code> &rarr;
+                <code>Dense(10, softmax)</code>.
+                Trained with RMSprop on sparse categorical cross-entropy loss.
+            </div>
+        </div>
+    </main>
+
+    <!-- Metrics Modal -->
+    <div class="modal fade" id="metricsModal" tabindex="-1" aria-labelledby="metricsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-white" id="metricsModalLabel">
+                        <i class="bi bi-speedometer2 text-cyan me-2"></i>Model Evaluation Metrics
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6 text-center">
+                            <h6 class="text-white small fw-bold mb-2">Confusion Matrix (10,000 Test Images)</h6>
+                            <img src="/api/artifacts/confusion_matrix.png" alt="Confusion Matrix" class="img-fluid rounded border border-secondary border-opacity-25">
+                        </div>
+                        <div class="col-sm-6 text-center">
+                            <h6 class="text-white small fw-bold mb-2">Training &amp; Validation Curves</h6>
+                            <img src="/api/artifacts/training_curves.png" alt="Training Curves" class="img-fluid rounded border border-secondary border-opacity-25">
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+                        <h6 class="text-white fw-bold small mb-2">Evaluation Summary:</h6>
+                        <ul class="small text-secondary mb-0">
+                            <li><strong>Dataset:</strong> CIFAR-10 (50,000 training images, 10,000 test images)</li>
+                            <li><strong>Model Type:</strong> Pure Artificial Neural Network (No CNN)</li>
+                            <li><strong>Evaluated Test Accuracy:</strong> {{ metrics.get('test_accuracy_percent', '44.21') }}%</li>
+                            <li><strong>Test Loss:</strong> {{ metrics.get('test_loss', '1.6002') }}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <a href="/api/metrics" target="_blank" class="btn btn-sm btn-outline-cyan">View Raw JSON</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-3 border-top border-secondary border-opacity-25 text-center text-secondary small">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <span class="gradient-text fw-semibold">CIFAR-10 Image Classification</span>
+                <span class="ms-1">&middot; Flask API &amp; Pure-ANN Architecture</span>
+            </div>
+            <div>
+                <a href="/api/health" class="text-secondary text-decoration-none me-3"><i class="bi bi-heart-pulse text-success me-1"></i>Health Check</a>
+                <a href="/api/classes" class="text-secondary text-decoration-none me-3"><i class="bi bi-list-check text-cyan me-1"></i>Classes</a>
+                <a href="/api/metrics" class="text-secondary text-decoration-none"><i class="bi bi-bar-chart-line text-purple me-1"></i>Metrics</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5.3 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom App Script -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
