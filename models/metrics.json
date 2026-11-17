@@ -3,95 +3,95 @@
   "model_name": "CIFAR-10 Pure-ANN",
   "architecture": "Artificial Neural Network (Flatten + 3 Dense Relu + Dense Softmax)",
   "total_parameters": 1754035,
-  "epochs_trained": 30,
+  "epochs_trained": 15,
   "batch_size": 32,
-  "test_loss": 1.6397,
-  "test_accuracy": 0.4294,
-  "test_accuracy_percent": 42.94,
+  "test_loss": 1.731,
+  "test_accuracy": 0.3749,
+  "test_accuracy_percent": 37.49,
   "per_class_accuracy": {
-    "airplane": 0.385,
-    "automobile": 0.36,
-    "bird": 0.231,
-    "cat": 0.038,
-    "deer": 0.378,
-    "dog": 0.504,
-    "frog": 0.507,
-    "horse": 0.769,
-    "ship": 0.57,
-    "truck": 0.552
+    "airplane": 0.212,
+    "automobile": 0.433,
+    "bird": 0.207,
+    "cat": 0.485,
+    "deer": 0.36,
+    "dog": 0.013,
+    "frog": 0.396,
+    "horse": 0.324,
+    "ship": 0.883,
+    "truck": 0.436
   },
   "classification_report": {
     "airplane": {
-      "precision": 0.5978260869565217,
-      "recall": 0.385,
-      "f1-score": 0.4683698296836983,
+      "precision": 0.5520833333333334,
+      "recall": 0.212,
+      "f1-score": 0.3063583815028902,
       "support": 1000.0
     },
     "automobile": {
-      "precision": 0.7392197125256673,
-      "recall": 0.36,
-      "f1-score": 0.484196368527236,
+      "precision": 0.5923392612859097,
+      "recall": 0.433,
+      "f1-score": 0.5002888503755055,
       "support": 1000.0
     },
     "bird": {
-      "precision": 0.3526717557251908,
-      "recall": 0.231,
-      "f1-score": 0.2791540785498489,
+      "precision": 0.33226324237560195,
+      "recall": 0.207,
+      "f1-score": 0.25508317929759705,
       "support": 1000.0
     },
     "cat": {
-      "precision": 0.24836601307189543,
-      "recall": 0.038,
-      "f1-score": 0.06591500433651344,
+      "precision": 0.2634437805540467,
+      "recall": 0.485,
+      "f1-score": 0.3414290742696234,
       "support": 1000.0
     },
     "deer": {
-      "precision": 0.35032437442076,
-      "recall": 0.378,
-      "f1-score": 0.36363636363636365,
+      "precision": 0.37815126050420167,
+      "recall": 0.36,
+      "f1-score": 0.36885245901639346,
       "support": 1000.0
     },
     "dog": {
-      "precision": 0.35770049680624555,
-      "recall": 0.504,
-      "f1-score": 0.41843088418430885,
+      "precision": 0.4482758620689655,
+      "recall": 0.013,
+      "f1-score": 0.025267249757045675,
       "support": 1000.0
     },
     "frog": {
-      "precision": 0.5029761904761905,
-      "recall": 0.507,
-      "f1-score": 0.5049800796812749,
+      "precision": 0.46261682242990654,
+      "recall": 0.396,
+      "f1-score": 0.4267241379310345,
       "support": 1000.0
     },
     "horse": {
-      "precision": 0.3051587301587302,
-      "recall": 0.769,
-      "f1-score": 0.4369318181818182,
+      "precision": 0.6113207547169811,
+      "recall": 0.324,
+      "f1-score": 0.4235294117647059,
       "support": 1000.0
     },
     "ship": {
-      "precision": 0.6433408577878104,
-      "recall": 0.57,
-      "f1-score": 0.6044538706256628,
+      "precision": 0.28237927726255196,
+      "recall": 0.883,
+      "f1-score": 0.42791373879331235,
       "support": 1000.0
     },
     "truck": {
-      "precision": 0.47627264883520276,
-      "recall": 0.552,
-      "f1-score": 0.5113478462251042,
+      "precision": 0.4703344120819849,
+      "recall": 0.436,
+      "f1-score": 0.45251686559418786,
       "support": 1000.0
     },
-    "accuracy": 0.4294,
+    "accuracy": 0.3749,
     "macro avg": {
-      "precision": 0.45738568667642154,
-      "recall": 0.42939999999999995,
-      "f1-score": 0.4137416143631829,
+      "precision": 0.4393208006613484,
+      "recall": 0.37489999999999996,
+      "f1-score": 0.3527963348302296,
       "support": 10000.0
     },
     "weighted avg": {
-      "precision": 0.4573856866764215,
-      "recall": 0.4294,
-      "f1-score": 0.4137416143631829,
+      "precision": 0.4393208006613484,
+      "recall": 0.3749,
+      "f1-score": 0.3527963348302296,
       "support": 10000.0
     }
   },

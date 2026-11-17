@@ -93,6 +93,7 @@ def build_ann_model():
         Dropout (0.5),
         Dense(units=128, activation="relu", name="dense_3"),
         Dense(units=64, activation="relu", name="dense_4"),
+        Dropout(0.2),
         Dense(units=32, activation="relu", name="dense_5"),
         Dense(units=10, activation="softmax", name="dense_output"),
     ], name="cifar10_pure_ann")
@@ -121,7 +122,8 @@ def save_sample_images(x_test, y_test, output_dir):
             break
 
 
-def train_and_evaluate(epochs=30, batch_size=64, models_dir=None):
+def train_and_evaluate(epochs=15, batch_size=64, models_dir=None):
+    
     """Execute training, evaluation, artifact export, and metric logging."""
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     if models_dir is None:
@@ -252,7 +254,7 @@ def train_and_evaluate(epochs=30, batch_size=64, models_dir=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train CIFAR-10 Pure-ANN")
-    parser.add_argument("--epochs", type=int, default=30, help="Number of training epochs (default: 30)")
+    parser.add_argument("--epochs", type=int, default=15, help="Number of training epochs (default: 15)")
     parser.add_argument("--batch-size", type=int, default=32, help="Batch size (default: 32)")
     args = parser.parse_args()
 
